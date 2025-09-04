@@ -26,19 +26,19 @@ interface BlockDetailModalProps {
 const generateSolarPanelImageUrl = (blockX: number, blockY: number, type: 'rgb' | 'thermal'): string => {
   // Use specific solar panel images for more realistic demonstration
   const rgbImages = [
-    'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=400&h=300&fit=crop&crop=entropy',
-    'https://images.unsplash.com/photo-1545558014-8692077e9b5c?w=400&h=300&fit=crop&crop=entropy',
-    'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=400&h=300&fit=crop&crop=entropy',
-    'https://images.unsplash.com/photo-1602080858428-57174f9431cf?w=400&h=300&fit=crop&crop=entropy',
-    'https://images.unsplash.com/photo-1624397640043-6caeceb1a51e?w=400&h=300&fit=crop&crop=entropy'
+    'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=400&h=300&fit=crop&crop=entropy&auto=format',
+    'https://images.unsplash.com/photo-1545558014-8692077e9b5c?w=400&h=300&fit=crop&crop=entropy&auto=format',
+    'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=400&h=300&fit=crop&crop=entropy&auto=format',
+    'https://images.unsplash.com/photo-1602080858428-57174f9431cf?w=400&h=300&fit=crop&crop=entropy&auto=format',
+    'https://images.unsplash.com/photo-1624397640043-6caeceb1a51e?w=400&h=300&fit=crop&crop=entropy&auto=format'
   ]
   
   const thermalImages = [
-    'https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=400&h=300&fit=crop&crop=entropy', // Thermal-like pattern
-    'https://images.unsplash.com/photo-1541891854-c6061c6e0b50?w=400&h=300&fit=crop&crop=entropy', // Heat map colors
-    'https://images.unsplash.com/photo-1545558014-8692077e9b5c?w=400&h=300&fit=crop&crop=entropy&sat=-100&hue=240', // Blue tinted
-    'https://images.unsplash.com/photo-1602080858428-57174f9431cf?w=400&h=300&fit=crop&crop=entropy&sat=-100&hue=60', // Heat colors
-    'https://images.unsplash.com/photo-1624397640043-6caeceb1a51e?w=400&h=300&fit=crop&crop=entropy&sat=-100&hue=300' // Purple tinted
+    'https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=400&h=300&fit=crop&crop=entropy&auto=format',
+    'https://images.unsplash.com/photo-1541891854-c6061c6e0b50?w=400&h=300&fit=crop&crop=entropy&auto=format',
+    'https://images.unsplash.com/photo-1545558014-8692077e9b5c?w=400&h=300&fit=crop&crop=entropy&sat=-100&hue=240&auto=format',
+    'https://images.unsplash.com/photo-1602080858428-57174f9431cf?w=400&h=300&fit=crop&crop=entropy&sat=-100&hue=60&auto=format',
+    'https://images.unsplash.com/photo-1624397640043-6caeceb1a51e?w=400&h=300&fit=crop&crop=entropy&sat=-100&hue=300&auto=format'
   ]
   
   const imageIndex = (blockX + blockY) % 5
@@ -380,6 +380,11 @@ function BlockDetailModal({ block, site, onClose }: BlockDetailModalProps) {
                         src={generateSolarPanelImageUrl(block.x, block.y, 'rgb')}
                         alt={`RGB image of block (${block.x}, ${block.y})`}
                         className="w-full h-64 object-cover rounded-lg"
+                        crossOrigin="anonymous"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement
+                          target.src = `https://via.placeholder.com/400x300/4ade80/ffffff?text=RGB+Block+(${block.x},${block.y})`
+                        }}
                       />
                       {imageView === 'overlay' && hasAnomalies && (
                         <div className="absolute inset-0">
@@ -419,6 +424,11 @@ function BlockDetailModal({ block, site, onClose }: BlockDetailModalProps) {
                         src={generateSolarPanelImageUrl(block.x, block.y, 'thermal')}
                         alt={`Thermal image of block (${block.x}, ${block.y})`}
                         className="w-full h-64 object-cover rounded-lg filter contrast-125 hue-rotate-240"
+                        crossOrigin="anonymous"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement
+                          target.src = `https://via.placeholder.com/400x300/dc2626/ffffff?text=Thermal+Block+(${block.x},${block.y})`
+                        }}
                       />
                       {hasAnomalies && (
                         <div className="absolute inset-0">

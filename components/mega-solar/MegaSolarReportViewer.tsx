@@ -10,7 +10,6 @@ import {
   FileText, Download, Share, Eye, Filter, Map, Layers
 } from 'lucide-react'
 import { ThermalAnomaly, MegaSolarSite } from '@/types'
-import DetailedGridView from './DetailedGridView'
 import SolarSiteMapView from './SolarSiteMapView'
 import BlockDetailModal from './BlockDetailModal'
 
@@ -20,7 +19,7 @@ interface MegaSolarReportViewerProps {
 }
 
 function MegaSolarReportViewer({ site, anomalies }: MegaSolarReportViewerProps) {
-  const [selectedView, setSelectedView] = useState<'overview' | 'grid' | 'map'>('overview')
+  const [selectedView, setSelectedView] = useState<'overview' | 'map'>('overview')
   const [selectedBlock, setSelectedBlock] = useState<{ x: number; y: number; anomalies: ThermalAnomaly[] } | null>(null)
 
   // Calculate summary statistics
@@ -38,6 +37,37 @@ function MegaSolarReportViewer({ site, anomalies }: MegaSolarReportViewerProps) 
   const affectedBlocks = new Set(anomalies.map(a => `${a.block_x}-${a.block_y}`)).size
   const normalBlocks = totalBlocks - affectedBlocks
 
+  // Generate grid display blocks for overview
+  const displayBlocks = []
+  for (let y = 0; y < site.blocks_y; y++) {
+    for (let x = 0; x < site.blocks_x; x++) {
+      const blockAnomalies = anomalies.filter(a => a.block_x === x && a.block_y === y)
+      const hasAnomaly = blockAnomalies.length > 0
+      const primaryAnomaly = blockAnomalies[0]
+      
+      displayBlocks.push({
+        x,
+        y,
+        hasAnomaly,
+        anomalyType: primaryAnomaly?.category || null,
+        anomalyCount: blockAnomalies.length,
+        anomalies: blockAnomalies
+      })
+    }
+  }
+
+  const getBlockColor = (block: any) => {
+    if (!block.hasAnomaly) return 'bg-green-200 hover:bg-green-300'
+    
+    switch (block.anomalyType) {
+      case 'hotspot': return 'bg-red-400 hover:bg-red-500'
+      case 'bypass_diode': return 'bg-orange-400 hover:bg-orange-500'
+      case 'vegetation': return 'bg-green-600 hover:bg-green-700'
+      case 'soiling': return 'bg-yellow-400 hover:bg-yellow-500'
+      default: return 'bg-gray-400 hover:bg-gray-500'
+    }
+  }
+
   const handleBlockClick = (blockX: number, blockY: number) => {
     const blockAnomalies = anomalies.filter(a => a.block_x === blockX && a.block_y === blockY)
     setSelectedBlock({ x: blockX, y: blockY, anomalies: blockAnomalies })
@@ -47,16 +77,11 @@ function MegaSolarReportViewer({ site, anomalies }: MegaSolarReportViewerProps) 
     <div className="space-y-6">
       {/* View Selector */}
       <Tabs value={selectedView} onValueChange={(v) => setSelectedView(v as any)}>
-        <TabsList className="grid w-full grid-cols-3 h-auto">
+        <TabsList className="grid w-full grid-cols-2 h-auto">
           <TabsTrigger value="overview" className="flex items-center gap-1 px-2 py-2 text-xs sm:text-sm sm:gap-2 sm:px-3">
             <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
             <span className="hidden sm:inline">概要ダッシュボード</span>
             <span className="sm:hidden">概要</span>
-          </TabsTrigger>
-          <TabsTrigger value="grid" className="flex items-center gap-1 px-2 py-2 text-xs sm:text-sm sm:gap-2 sm:px-3">
-            <Grid className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline">詳細グリッド</span>
-            <span className="sm:hidden">グリッド</span>
           </TabsTrigger>
           <TabsTrigger value="map" className="flex items-center gap-1 px-2 py-2 text-xs sm:text-sm sm:gap-2 sm:px-3">
             <Map className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -163,57 +188,37 @@ function MegaSolarReportViewer({ site, anomalies }: MegaSolarReportViewerProps) 
               </div>
               
               <div 
-                className="mx-auto mb-4 overflow-x-auto"
+                className="mx-auto mb-4"
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: `repeat(${Math.min(site.blocks_x, 50)}, minmax(0, 1fr))`,
-                  gap: '0.5px',
+                  gridTemplateColumns: `repeat(${Math.min(site.blocks_x, 25)}, minmax(0, 1fr))`,
+                  gap: '1px',
                   maxWidth: '100%',
-                  width: '100%',
-                  minWidth: '300px',
+                  aspectRatio: `${Math.min(site.blocks_x, 25)} / ${Math.min(site.blocks_y, 20)}`,
                 }}
               >
-                {Array.from({ length: Math.min(site.blocks_x * site.blocks_y, 500) }, (_, index) => {
-                  const y = Math.floor(index / site.blocks_x)
-                  const x = index % site.blocks_x
-                  const blockAnomalies = anomalies.filter(a => a.block_x === x && a.block_y === y)
-                  const hasAnomaly = blockAnomalies.length > 0
-                  const primaryAnomaly = blockAnomalies[0]
-                  
-                  const getBlockColor = () => {
-                    if (!hasAnomaly) return 'bg-green-200 hover:bg-green-300'
-                    switch (primaryAnomaly?.category) {
-                      case 'hotspot': return 'bg-red-400 hover:bg-red-500'
-                      case 'bypass_diode': return 'bg-orange-400 hover:bg-orange-500'
-                      case 'vegetation': return 'bg-green-600 hover:bg-green-700'
-                      case 'soiling': return 'bg-yellow-400 hover:bg-yellow-500'
-                      default: return 'bg-gray-400 hover:bg-gray-500'
-                    }
-                  }
-                  
-                  return (
-                    <div
-                      key={`block-${x}-${y}`}
-                      className={`
-                        w-3 h-3 cursor-pointer transition-all duration-200
-                        ${getBlockColor()}
-                        flex items-center justify-center text-xs font-bold text-white
-                      `}
-                      title={`ブロック (${x}, ${y})${
-                        hasAnomaly 
-                          ? ` - ${primaryAnomaly?.category} (${blockAnomalies.length}件)`
-                          : ' - 正常'
-                      }`}
-                      onClick={() => handleBlockClick(x, y)}
-                    >
-                      {hasAnomaly && blockAnomalies.length > 1 && (
-                        <span className="text-xs">
-                          {blockAnomalies.length}
-                        </span>
-                      )}
-                    </div>
-                  )
-                })}
+                {displayBlocks.slice(0, 500).map((block, index) => (
+                  <div
+                    key={`block-${block.x}-${block.y}`}
+                    className={`
+                      aspect-square rounded-sm cursor-pointer transition-all duration-200
+                      ${getBlockColor(block)}
+                      flex items-center justify-center text-xs font-bold text-white
+                    `}
+                    title={`ブロック (${block.x}, ${block.y})${
+                      block.hasAnomaly 
+                        ? ` - ${block.anomalyType} (${block.anomalyCount}件)`
+                        : ' - 正常'
+                    }`}
+                    onClick={() => handleBlockClick(block.x, block.y)}
+                  >
+                    {block.hasAnomaly && (
+                      <span className="text-xs">
+                        {block.anomalyCount}
+                      </span>
+                    )}
+                  </div>
+                ))}
               </div>
 
               {/* Legend */}
@@ -239,26 +244,10 @@ function MegaSolarReportViewer({ site, anomalies }: MegaSolarReportViewerProps) 
                   <span className="text-xs">汚れ影響</span>
                 </div>
               </div>
-              
-              <div className="text-xs text-center text-gray-500 mt-4">
-                💡 表示: {site.blocks_x} × {site.blocks_y} = {totalBlocks.toLocaleString()}ブロック（簡易表示: 最大500ブロック）
-              </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* Detailed Grid Tab */}
-        <TabsContent value="grid" className="space-y-6">
-          <Card>
-            <CardContent className="p-6">
-              <DetailedGridView 
-                site={site}
-                anomalies={anomalies}
-                onBlockClick={handleBlockClick}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
 
         {/* Map Tab */}
         <TabsContent value="map" className="space-y-6">

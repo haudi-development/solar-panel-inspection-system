@@ -118,16 +118,21 @@ function SolarSiteMapView({ site, anomalies, onBlockClick }: SolarSiteMapViewPro
     if (!showSiteGrid) return []
     
     const rectangles = []
-    const latStep = (siteBounds.north - siteBounds.south) / site.blocks_y
-    const lngStep = (siteBounds.east - siteBounds.west) / site.blocks_x
+    // Use the same coordinate calculation as in dummy data generator
+    const blockSize = 0.0001 // Size per block in degrees
     
     // Show all blocks, but color them based on anomaly status like overview dashboard
     for (let y = 0; y < site.blocks_y; y++) {
       for (let x = 0; x < site.blocks_x; x++) {
-        const lat1 = siteBounds.south + y * latStep
-        const lat2 = siteBounds.south + (y + 1) * latStep
-        const lng1 = siteBounds.west + x * lngStep
-        const lng2 = siteBounds.west + (x + 1) * lngStep
+        // Calculate block center coordinates using same logic as anomaly generation
+        const blockCenterLat = site.coordinate.lat + (y - site.blocks_y/2) * blockSize
+        const blockCenterLng = site.coordinate.lng + (x - site.blocks_x/2) * blockSize
+        
+        // Create rectangle around the block center
+        const lat1 = blockCenterLat - blockSize/2
+        const lat2 = blockCenterLat + blockSize/2  
+        const lng1 = blockCenterLng - blockSize/2
+        const lng2 = blockCenterLng + blockSize/2
         
         // Check for anomalies in this block
         const blockAnomalies = anomalies.filter(a => a.block_x === x && a.block_y === y)
