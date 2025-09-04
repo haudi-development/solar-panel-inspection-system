@@ -108,3 +108,125 @@ export async function simulateAnalysisProgress(
     onProgress(step.progress, step.message)
   }
 }
+
+// Mega Solar specific dummy data generation
+export function generateMegaSolarDummyData(
+  siteId: string,
+  blocksX: number = 50,
+  blocksY: number = 35
+): { anomalies: any[] } {
+  const totalBlocks = blocksX * blocksY
+  const anomalies: any[] = []
+  
+  // Calculate realistic anomaly count (about 0.1% of total panels)
+  const baseAnomalyRate = 0.001 // 0.1% anomaly rate
+  const totalPanelsPerBlock = 100 // Assume 100 panels per block
+  const totalPanels = totalBlocks * totalPanelsPerBlock
+  const targetAnomalies = Math.floor(totalPanels * baseAnomalyRate) + Math.floor(Math.random() * 50)
+
+  // Anomaly type weights for realistic distribution
+  const anomalyTypeWeights = [
+    { type: 'hotspot_single', category: 'hotspot', weight: 0.35 },
+    { type: 'hotspot_multi', category: 'hotspot', weight: 0.15 },
+    { type: 'bypass_diode', category: 'bypass_diode', weight: 0.25 },
+    { type: 'vegetation', category: 'vegetation', weight: 0.15 },
+    { type: 'soiling', category: 'soiling', weight: 0.10 }
+  ]
+
+  // Generate weighted random anomaly types
+  const getRandomAnomalyType = () => {
+    const rand = Math.random()
+    let cumWeight = 0
+    
+    for (const type of anomalyTypeWeights) {
+      cumWeight += type.weight
+      if (rand <= cumWeight) {
+        return type
+      }
+    }
+    return anomalyTypeWeights[0] // fallback
+  }
+
+  // Generate temperature based on anomaly type
+  const getTemperatureData = (type: string) => {
+    const baseTemp = 25 + Math.random() * 15 // 25-40°C base temperature
+    
+    switch (type) {
+      case 'hotspot_single':
+      case 'hotspot_multi':
+        return {
+          temperature: baseTemp + 15 + Math.random() * 25, // +15-40°C
+          temperatureDelta: 15 + Math.random() * 25
+        }
+      case 'bypass_diode':
+        return {
+          temperature: baseTemp + 8 + Math.random() * 12, // +8-20°C
+          temperatureDelta: 8 + Math.random() * 12
+        }
+      default:
+        return {
+          temperature: baseTemp + Math.random() * 5, // slight increase
+          temperatureDelta: Math.random() * 5
+        }
+    }
+  }
+
+  const usedBlocks = new Set<string>()
+
+  for (let i = 0; i < targetAnomalies; i++) {
+    let blockX: number, blockY: number, blockKey: string
+    
+    // Find unused block position
+    do {
+      blockX = Math.floor(Math.random() * blocksX)
+      blockY = Math.floor(Math.random() * blocksY)
+      blockKey = `${blockX}-${blockY}`
+    } while (usedBlocks.has(blockKey))
+    
+    usedBlocks.add(blockKey)
+
+    const anomalyTypeInfo = getRandomAnomalyType()
+    const tempData = getTemperatureData(anomalyTypeInfo.type)
+    
+    // Random panel position within the block
+    const panelX = Math.floor(Math.random() * 10) // 0-9 (assuming 10x10 panels per block)
+    const panelY = Math.floor(Math.random() * 10)
+    
+    const anomaly = {
+      id: `thermal-${siteId}-${i + 1}`,
+      site_id: siteId,
+      block_x: blockX,
+      block_y: blockY,
+      panel_x: panelX,
+      panel_y: panelY,
+      type: anomalyTypeInfo.type,
+      category: anomalyTypeInfo.category,
+      severity: tempData.temperatureDelta > 20 ? 'high' : tempData.temperatureDelta > 10 ? 'medium' : 'low',
+      temperature: Math.round(tempData.temperature * 10) / 10,
+      temperature_delta: Math.round(tempData.temperatureDelta * 10) / 10,
+      confidence: 0.8 + Math.random() * 0.2, // 80-100% confidence
+      detection_date: new Date().toISOString(),
+      description: getAnomalyDescription(anomalyTypeInfo.type, tempData.temperatureDelta),
+      coordinates: {
+        lat: 35.4983 + (blockY - blocksY/2) * 0.0001,
+        lng: 140.1169 + (blockX - blocksX/2) * 0.0001
+      }
+    }
+    
+    anomalies.push(anomaly)
+  }
+
+  return { anomalies }
+}
+
+function getAnomalyDescription(type: string, tempDelta: number): string {
+  const descriptions = {
+    hotspot_single: `単一セルホットスポット検出 (+${tempDelta.toFixed(1)}°C)`,
+    hotspot_multi: `複数セルホットスポット検出 (+${tempDelta.toFixed(1)}°C)`,
+    bypass_diode: `バイパスダイオード起動による温度上昇 (+${tempDelta.toFixed(1)}°C)`,
+    vegetation: `植生による部分的遮蔽を検出 (+${tempDelta.toFixed(1)}°C)`,
+    soiling: `汚れによる発電効率低下を検出 (+${tempDelta.toFixed(1)}°C)`
+  }
+  
+  return descriptions[type as keyof typeof descriptions] || `異常検出 (+${tempDelta.toFixed(1)}°C)`
+}

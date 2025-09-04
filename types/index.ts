@@ -56,3 +56,40 @@ export interface AnalysisResult {
     affected_panels: number
   }
 }
+
+// Mega Solar Types
+export interface MegaSolarSite {
+  id: string
+  name: string
+  location: string
+  capacity_mw: number
+  total_panels: number
+  blocks_x: number
+  blocks_y: number
+  coordinate: {
+    lat: number
+    lng: number
+  }
+  created_at: string
+}
+
+export interface ThermalAnomaly {
+  id: string
+  site_id: string
+  block_x: number
+  block_y: number
+  panel_x?: number
+  panel_y?: number
+  type: 'hotspot_single' | 'hotspot_multi' | 'bypass_diode' | 'vegetation' | 'soiling'
+  category: 'hotspot' | 'bypass_diode' | 'vegetation' | 'soiling'
+  severity: 'high' | 'medium' | 'low'
+  temperature: number
+  temperature_delta: number
+  confidence: number
+  detection_date: string
+  description: string
+  coordinates: {
+    lat: number
+    lng: number
+  }
+}
