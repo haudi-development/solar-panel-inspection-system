@@ -22,32 +22,36 @@ interface BlockDetailModalProps {
   onClose: () => void
 }
 
-// Generate realistic solar panel image URLs
-const generateSolarPanelImageUrl = (blockX: number, blockY: number, type: 'rgb' | 'thermal'): string => {
-  // Use specific solar panel images for more realistic demonstration
-  const rgbImages = [
-    'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=400&h=300&fit=crop&crop=entropy&auto=format',
-    'https://images.unsplash.com/photo-1545558014-8692077e9b5c?w=400&h=300&fit=crop&crop=entropy&auto=format',
-    'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=400&h=300&fit=crop&crop=entropy&auto=format',
-    'https://images.unsplash.com/photo-1602080858428-57174f9431cf?w=400&h=300&fit=crop&crop=entropy&auto=format',
-    'https://images.unsplash.com/photo-1624397640043-6caeceb1a51e?w=400&h=300&fit=crop&crop=entropy&auto=format'
-  ]
-  
-  const thermalImages = [
-    'https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=400&h=300&fit=crop&crop=entropy&auto=format',
-    'https://images.unsplash.com/photo-1541891854-c6061c6e0b50?w=400&h=300&fit=crop&crop=entropy&auto=format',
-    'https://images.unsplash.com/photo-1545558014-8692077e9b5c?w=400&h=300&fit=crop&crop=entropy&sat=-100&hue=240&auto=format',
-    'https://images.unsplash.com/photo-1602080858428-57174f9431cf?w=400&h=300&fit=crop&crop=entropy&sat=-100&hue=60&auto=format',
-    'https://images.unsplash.com/photo-1624397640043-6caeceb1a51e?w=400&h=300&fit=crop&crop=entropy&sat=-100&hue=300&auto=format'
-  ]
-  
-  const imageIndex = (blockX + blockY) % 5
-  
-  if (type === 'rgb') {
-    return rgbImages[imageIndex]
-  } else {
-    return thermalImages[imageIndex]
+// Generate realistic solar panel image URLs based on anomaly type
+const generateSolarPanelImageUrl = (anomalies: ThermalAnomaly[], type: 'rgb' | 'thermal'): string => {
+  // Determine image type based on most severe anomaly
+  let imageType = 'normal'
+  if (anomalies.length > 0) {
+    const sortedAnomalies = anomalies.sort((a, b) => {
+      const severityOrder = { high: 3, medium: 2, low: 1 }
+      return severityOrder[b.severity as keyof typeof severityOrder] - severityOrder[a.severity as keyof typeof severityOrder]
+    })
+    
+    const primaryAnomaly = sortedAnomalies[0]
+    switch (primaryAnomaly.category) {
+      case 'hotspot':
+        imageType = 'hotspot'
+        break
+      case 'bypass_diode':
+        imageType = 'bypass-diode'
+        break
+      case 'vegetation':
+        imageType = 'vegetation'
+        break
+      case 'soiling':
+        imageType = 'soiling'
+        break
+      default:
+        imageType = 'normal'
+    }
   }
+  
+  return `/mega-solar/samples/sample-${type}-${imageType}.png`
 }
 
 // Generate mock thermal overlay data
@@ -71,7 +75,7 @@ function BlockDetailModal({ block, site, onClose }: BlockDetailModalProps) {
   
   const hasAnomalies = block.anomalies.length > 0
   
-  // Handle keyboard events
+  // Handle keyboard events and prevent background scroll
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -80,8 +84,16 @@ function BlockDetailModal({ block, site, onClose }: BlockDetailModalProps) {
     }
     
     if (typeof window !== 'undefined') {
+      // Prevent background scrolling when modal is open
+      const originalStyle = window.getComputedStyle(document.body).overflow
+      document.body.style.overflow = 'hidden'
+      
       document.addEventListener('keydown', handleKeyDown)
-      return () => document.removeEventListener('keydown', handleKeyDown)
+      
+      return () => {
+        document.body.style.overflow = originalStyle
+        document.removeEventListener('keydown', handleKeyDown)
+      }
     }
   }, [onClose])
   const primaryAnomaly = block.anomalies[0]
@@ -143,16 +155,17 @@ function BlockDetailModal({ block, site, onClose }: BlockDetailModalProps) {
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-2 sm:p-4"
+      className="fixed inset-0 z-50 bg-black bg-opacity-50 overflow-hidden"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
       onClick={onClose}
     >
-      <div 
-        className="bg-white rounded-lg w-full max-w-6xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="h-full w-full flex items-center justify-center p-2 sm:p-4">
+        <div 
+          className="bg-white rounded-lg w-full max-w-6xl h-[90vh] flex flex-col overflow-hidden shadow-xl"
+          onClick={(e) => e.stopPropagation()}
+        >
         {/* Header */}
         <div className="flex items-center justify-between p-3 sm:p-6 border-b">
           <div className="flex items-center gap-2 sm:gap-3">
@@ -175,17 +188,22 @@ function BlockDetailModal({ block, site, onClose }: BlockDetailModalProps) {
         </div>
 
         {/* Content */}
-        <div className="p-3 sm:p-6 overflow-y-auto max-h-[calc(95vh-120px)] sm:max-h-[calc(90vh-100px)]">
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
-            <TabsList className="grid w-full grid-cols-4 h-auto">
-              <TabsTrigger value="overview" className="text-xs sm:text-sm px-2 py-2">概要</TabsTrigger>
-              <TabsTrigger value="images" className="text-xs sm:text-sm px-2 py-2">画像解析</TabsTrigger>
-              <TabsTrigger value="analysis" className="text-xs sm:text-sm px-2 py-2">詳細解析</TabsTrigger>
-              <TabsTrigger value="history" className="text-xs sm:text-sm px-2 py-2">履歴</TabsTrigger>
-            </TabsList>
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="flex flex-col h-full">
+            <div className="px-3 sm:px-6 pt-3 sm:pt-6 pb-2">
+              <TabsList className="grid w-full grid-cols-4 h-auto">
+                <TabsTrigger value="overview" className="text-xs sm:text-sm px-2 py-2">概要</TabsTrigger>
+                <TabsTrigger value="images" className="text-xs sm:text-sm px-2 py-2">画像解析</TabsTrigger>
+                <TabsTrigger value="analysis" className="text-xs sm:text-sm px-2 py-2">詳細解析</TabsTrigger>
+                <TabsTrigger value="history" className="text-xs sm:text-sm px-2 py-2">履歴</TabsTrigger>
+              </TabsList>
+            </div>
+            
+            <div className="flex-1 overflow-hidden">
+              <div className="h-full overflow-y-auto px-3 sm:px-6 pb-3 sm:pb-6">
 
             {/* Overview Tab */}
-            <TabsContent value="overview" className="space-y-3 sm:space-y-6">
+            <TabsContent value="overview" className="space-y-3 sm:space-y-6 mt-0">
               <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-3 sm:gap-6">
                 {/* Block Status */}
                 <Card>
@@ -334,9 +352,25 @@ function BlockDetailModal({ block, site, onClose }: BlockDetailModalProps) {
             </TabsContent>
 
             {/* Images Tab */}
-            <TabsContent value="images" className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">画像解析ビュー</h3>
+            <TabsContent value="images" className="space-y-6 mt-0">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-lg font-semibold">画像解析ビュー</h3>
+                  <p className="text-sm text-gray-600">
+                    {hasAnomalies ? (
+                      <>
+                        表示中: <span className="font-medium text-red-600">
+                          {primaryAnomaly.category === 'hotspot' && 'ホットスポット異常'}
+                          {primaryAnomaly.category === 'bypass_diode' && 'バイパスダイオード異常'}
+                          {primaryAnomaly.category === 'vegetation' && '植生遮蔽異常'}
+                          {primaryAnomaly.category === 'soiling' && '汚れ付着異常'}
+                        </span> のサンプル画像
+                      </>
+                    ) : (
+                      <span className="text-green-600">正常ブロックのサンプル画像</span>
+                    )}
+                  </p>
+                </div>
                 <div className="flex gap-2">
                   <Button
                     variant={imageView === 'rgb' ? 'default' : 'outline'}
@@ -377,7 +411,7 @@ function BlockDetailModal({ block, site, onClose }: BlockDetailModalProps) {
                   <CardContent>
                     <div className="relative">
                       <img
-                        src={generateSolarPanelImageUrl(block.x, block.y, 'rgb')}
+                        src={generateSolarPanelImageUrl(block.anomalies, 'rgb')}
                         alt={`RGB image of block (${block.x}, ${block.y})`}
                         className="w-full h-64 object-cover rounded-lg"
                         crossOrigin="anonymous"
@@ -421,9 +455,9 @@ function BlockDetailModal({ block, site, onClose }: BlockDetailModalProps) {
                   <CardContent>
                     <div className="relative">
                       <img
-                        src={generateSolarPanelImageUrl(block.x, block.y, 'thermal')}
+                        src={generateSolarPanelImageUrl(block.anomalies, 'thermal')}
                         alt={`Thermal image of block (${block.x}, ${block.y})`}
-                        className="w-full h-64 object-cover rounded-lg filter contrast-125 hue-rotate-240"
+                        className="w-full h-64 object-cover rounded-lg"
                         crossOrigin="anonymous"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement
@@ -455,9 +489,9 @@ function BlockDetailModal({ block, site, onClose }: BlockDetailModalProps) {
                 </Card>
               </div>
 
-              {/* Temperature Scale */}
+              {/* Temperature Scale and Sample Info */}
               <Card>
-                <CardContent className="p-4">
+                <CardContent className="p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">温度スケール</span>
                     <div className="flex items-center gap-2">
@@ -466,12 +500,23 @@ function BlockDetailModal({ block, site, onClose }: BlockDetailModalProps) {
                       <span className="text-xs">60°C</span>
                     </div>
                   </div>
+                  
+                  <div className="text-xs text-gray-500 border-t pt-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <div>
+                        <strong>実サンプル画像:</strong> 実際の点検データから取得
+                      </div>
+                      <div>
+                        <strong>異常検知:</strong> AI分析による自動判定結果
+                      </div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
 
             {/* Analysis Tab */}
-            <TabsContent value="analysis" className="space-y-6">
+            <TabsContent value="analysis" className="space-y-6 mt-0">
               <div className="grid md:grid-cols-2 gap-6">
                 <Card>
                   <CardHeader>
@@ -541,7 +586,7 @@ function BlockDetailModal({ block, site, onClose }: BlockDetailModalProps) {
             </TabsContent>
 
             {/* History Tab */}
-            <TabsContent value="history" className="space-y-6">
+            <TabsContent value="history" className="space-y-6 mt-0">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -581,11 +626,13 @@ function BlockDetailModal({ block, site, onClose }: BlockDetailModalProps) {
                 </CardContent>
               </Card>
             </TabsContent>
+              </div>
+            </div>
           </Tabs>
         </div>
 
         {/* Footer */}
-        <div className="flex flex-col sm:flex-row justify-between items-center p-3 sm:p-6 border-t bg-gray-50 gap-3 sm:gap-0">
+        <div className="flex-shrink-0 flex flex-col sm:flex-row justify-between items-center p-3 sm:p-6 border-t bg-gray-50 gap-3 sm:gap-0">
           <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
             <MapPin className="h-3 w-3 sm:h-4 sm:w-4" />
             <span className="hidden sm:inline">座標: {site.coordinate.lat.toFixed(4)}, {site.coordinate.lng.toFixed(4)}</span>
@@ -604,6 +651,7 @@ function BlockDetailModal({ block, site, onClose }: BlockDetailModalProps) {
             </Button>
             <Button onClick={onClose} size="sm" className="flex-1 sm:flex-none text-xs">閉じる</Button>
           </div>
+        </div>
         </div>
       </div>
     </div>
