@@ -257,6 +257,7 @@ function MegaSolarReportViewer({ site, anomalies }: MegaSolarReportViewerProps) 
                 site={site}
                 anomalies={anomalies}
                 onBlockClick={handleBlockClick}
+                isModalOpen={selectedBlock !== null}
               />
             </CardContent>
           </Card>

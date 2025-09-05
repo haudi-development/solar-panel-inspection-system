@@ -23,6 +23,7 @@ interface SolarSiteMapViewProps {
   site: MegaSolarSite
   anomalies: ThermalAnomaly[]
   onBlockClick: (blockX: number, blockY: number) => void
+  isModalOpen?: boolean
 }
 
 // Custom marker component for anomaly blocks
@@ -82,7 +83,7 @@ function AnomalyMarker({ anomaly, onBlockClick }: { anomaly: ThermalAnomaly; onB
   )
 }
 
-function SolarSiteMapView({ site, anomalies, onBlockClick }: SolarSiteMapViewProps) {
+function SolarSiteMapView({ site, anomalies, onBlockClick, isModalOpen = false }: SolarSiteMapViewProps) {
   const [mapType, setMapType] = useState<'satellite' | 'street'>('satellite')
   const [showAnomalies, setShowAnomalies] = useState(true)
   const [showSiteGrid, setShowSiteGrid] = useState(true)
@@ -211,7 +212,7 @@ function SolarSiteMapView({ site, anomalies, onBlockClick }: SolarSiteMapViewPro
   }
 
   return (
-    <div className={`space-y-4 ${isFullscreen ? 'fixed inset-0 z-50 bg-white p-4' : ''}`}>
+    <div className={`space-y-4 ${isFullscreen ? 'fixed inset-0 z-50 bg-white p-4' : ''} ${isModalOpen ? 'pointer-events-none' : ''}`}>
       {/* Controls */}
       <div className="space-y-3 sm:space-y-0 sm:flex sm:flex-wrap sm:justify-between sm:items-center gap-4">
         <div className="flex items-center gap-2">
@@ -302,7 +303,14 @@ function SolarSiteMapView({ site, anomalies, onBlockClick }: SolarSiteMapViewPro
       {/* Map Container */}
       <Card className="overflow-hidden">
         <CardContent className="p-0">
-          <div style={{ height: isFullscreen ? 'calc(100vh - 200px)' : isMobile ? '300px' : '500px' }}>
+          <div 
+            style={{ 
+              height: isFullscreen ? 'calc(100vh - 200px)' : isMobile ? '300px' : '500px',
+              pointerEvents: isModalOpen ? 'none' : 'auto',
+              position: 'relative',
+              zIndex: isModalOpen ? 1 : 'auto'
+            }}
+          >
             <MapContainer
               center={[site.coordinate.lat, site.coordinate.lng]}
               zoom={isMobile ? 14 : 15}
