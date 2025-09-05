@@ -115,24 +115,15 @@ export default function HomePage() {
     <AuthenticatedLayout>
       <div className="max-w-7xl mx-auto">
       <div className="mb-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-yellow-500/10 rounded-lg">
-            <Zap className="h-6 w-6 text-yellow-600" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold">メガソーラー点検システム</h1>
-            <p className="text-gray-600">大規模太陽光発電所の点検・監視システム</p>
-          </div>
-        </div>
         
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'upload' | 'history')}>
-          <TabsList className="grid w-[400px] grid-cols-2">
-            <TabsTrigger value="upload" className="flex items-center gap-2">
-              <FolderOpen className="h-4 w-4" />
+          <TabsList className="grid w-full max-w-[400px] grid-cols-2">
+            <TabsTrigger value="upload" className="flex items-center gap-1 sm:gap-2 text-sm">
+              <FolderOpen className="h-3 w-3 sm:h-4 sm:w-4" />
               新規点検
             </TabsTrigger>
-            <TabsTrigger value="history" className="flex items-center gap-2">
-              <History className="h-4 w-4" />
+            <TabsTrigger value="history" className="flex items-center gap-1 sm:gap-2 text-sm">
+              <History className="h-3 w-3 sm:h-4 sm:w-4" />
               点検履歴
             </TabsTrigger>
           </TabsList>

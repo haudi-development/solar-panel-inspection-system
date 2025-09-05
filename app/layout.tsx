@@ -6,7 +6,7 @@ import { AuthProvider } from '@/contexts/AuthContext'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: '太陽光パネル点検システム - Solar Inspector',
+  title: 'メガソーラー点検システム - Solar Inspector',
   description: 'メガソーラー施設の点検・解析プラットフォーム。ドローン画像による太陽光パネルの異常検出と分析',
 }
 

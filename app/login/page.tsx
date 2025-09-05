@@ -62,27 +62,27 @@ export default function LoginPage() {
       <div className="w-full max-w-md space-y-6">
         {/* Header */}
         <div className="text-center space-y-4">
-          <div className="flex items-center justify-center space-x-2">
-            <div className="bg-blue-600 p-3 rounded-full">
-              <Zap className="h-8 w-8 text-white" />
+          <div className="flex items-center justify-center space-x-2 sm:space-x-3">
+            <div className="bg-blue-600 p-2 sm:p-3 rounded-full">
+              <Zap className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Solar Inspector</h1>
-              <p className="text-sm text-gray-600">メガソーラー点検システム</p>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Solar Inspector</h1>
+              <p className="text-xs sm:text-sm text-gray-600">メガソーラー点検システム</p>
             </div>
           </div>
           
           <div className="flex items-center justify-center space-x-2 text-blue-700">
-            <Shield className="h-5 w-5" />
-            <span className="text-sm font-medium">セキュアログイン</span>
+            <Shield className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="text-xs sm:text-sm font-medium">セキュアログイン</span>
           </div>
         </div>
 
         {/* Login Card */}
         <Card className="shadow-lg">
           <CardHeader className="space-y-1 pb-4">
-            <CardTitle className="text-xl text-center">システムにログイン</CardTitle>
-            <p className="text-sm text-gray-600 text-center">
+            <CardTitle className="text-lg sm:text-xl text-center">システムにログイン</CardTitle>
+            <p className="text-xs sm:text-sm text-gray-600 text-center">
               認証情報を入力してください
             </p>
           </CardHeader>
@@ -160,8 +160,8 @@ export default function LoginPage() {
 
 
         {/* Footer */}
-        <div className="text-center text-xs text-gray-500">
-          © 2024 Solar Inspector. セキュリティに配慮した太陽光発電システム点検ツール
+        <div className="text-center text-xs text-gray-500 px-4">
+          © 2024 Solar Inspector. セキュリティに配慮したメガソーラー点検システム
         </div>
       </div>
     </div>

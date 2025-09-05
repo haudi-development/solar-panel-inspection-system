@@ -51,28 +51,28 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             {/* Logo and Title */}
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 sm:space-x-3">
               <div className="bg-blue-600 p-2 rounded-lg">
-                <Zap className="h-6 w-6 text-white" />
+                <Zap className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
               </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">
-                  太陽光パネル点検システム
+              <div className="min-w-0 flex-1">
+                <h1 className="text-lg sm:text-xl font-bold text-gray-900 truncate">
+                  メガソーラー点検システム
                 </h1>
-                <p className="text-sm text-gray-600">メガソーラー点検・解析プラットフォーム</p>
+                <p className="text-xs sm:text-sm text-gray-600 hidden sm:block">点検・解析プラットフォーム</p>
               </div>
             </div>
 
             {/* User Info and Actions */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4">
               {/* Status Badge */}
-              <Badge variant="outline" className="flex items-center space-x-1 text-green-700 border-green-200">
+              <Badge variant="outline" className="hidden sm:flex items-center space-x-1 text-green-700 border-green-200">
                 <Shield className="h-3 w-3" />
                 <span>認証済み</span>
               </Badge>
 
               {/* Current Date */}
-              <div className="hidden md:flex items-center space-x-1 text-sm text-gray-600">
+              <div className="hidden lg:flex items-center space-x-1 text-sm text-gray-600">
                 <Calendar className="h-4 w-4" />
                 <span>{new Date().toLocaleDateString('ja-JP', { 
                   year: 'numeric', 
@@ -83,7 +83,7 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 
               {/* User Menu */}
               <div className="flex items-center space-x-2">
-                <div className="hidden sm:flex items-center space-x-2">
+                <div className="hidden md:flex items-center space-x-2">
                   <User className="h-4 w-4 text-gray-500" />
                   <span className="text-sm font-medium text-gray-700">管理者</span>
                 </div>
@@ -92,9 +92,9 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
                   variant="outline" 
                   size="sm"
                   onClick={handleLogout}
-                  className="flex items-center space-x-1"
+                  className="flex items-center space-x-1 text-xs sm:text-sm px-2 sm:px-3"
                 >
-                  <LogOut className="h-4 w-4" />
+                  <LogOut className="h-3 w-3 sm:h-4 sm:w-4" />
                   <span className="hidden sm:inline">ログアウト</span>
                 </Button>
               </div>
