@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Upload, History, Zap, FolderOpen, MapPin } from 'lucide-react'
+import { AuthenticatedLayout } from '@/components/layout/AuthenticatedLayout'
 
 export default function HomePage() {
   const [activeTab, setActiveTab] = useState<'upload' | 'history'>('upload')
@@ -111,7 +112,8 @@ export default function HomePage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <AuthenticatedLayout>
+      <div className="max-w-7xl mx-auto">
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 bg-yellow-500/10 rounded-lg">
@@ -280,6 +282,7 @@ export default function HomePage() {
           <MegaSolarHistory onViewReport={handleViewHistoryReport} />
         </TabsContent>
       </Tabs>
-    </div>
+      </div>
+    </AuthenticatedLayout>
   )
 }
