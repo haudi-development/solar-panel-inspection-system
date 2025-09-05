@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useIsMobile } from '@/hooks/useMediaQuery'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -71,12 +72,15 @@ const generateThermalOverlay = (anomalies: ThermalAnomaly[]) => {
 function BlockDetailModal({ block, site, onClose }: BlockDetailModalProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'images' | 'analysis' | 'history'>('overview')
   const [imageView, setImageView] = useState<'rgb' | 'thermal' | 'overlay'>('rgb')
+  const [mounted, setMounted] = useState(false)
   const isMobile = useIsMobile()
   
   const hasAnomalies = block.anomalies.length > 0
   
   // Handle keyboard events and prevent background scroll
   useEffect(() => {
+    setMounted(true)
+    
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         onClose()
@@ -93,6 +97,7 @@ function BlockDetailModal({ block, site, onClose }: BlockDetailModalProps) {
       return () => {
         document.body.style.overflow = originalStyle
         document.removeEventListener('keydown', handleKeyDown)
+        setMounted(false)
       }
     }
   }, [onClose])
@@ -153,17 +158,25 @@ function BlockDetailModal({ block, site, onClose }: BlockDetailModalProps) {
     }
   }
 
-  return (
+  // Don't render on server side or before component is mounted
+  if (!mounted || typeof window === 'undefined') {
+    return null
+  }
+
+  const modalContent = (
     <div 
-      className="fixed bg-black bg-opacity-50 overflow-hidden"
+      className="bg-black bg-opacity-50 overflow-hidden"
       style={{ 
+        position: 'fixed',
         zIndex: 9999,
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
         width: '100vw',
-        height: '100vh'
+        height: '100vh',
+        margin: 0,
+        padding: 0
       }}
       role="dialog"
       aria-modal="true"
@@ -665,6 +678,8 @@ function BlockDetailModal({ block, site, onClose }: BlockDetailModalProps) {
       </div>
     </div>
   )
+
+  return createPortal(modalContent, document.body)
 }
 
 export default BlockDetailModal
