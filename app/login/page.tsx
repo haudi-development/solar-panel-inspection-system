@@ -158,18 +158,6 @@ export default function LoginPage() {
           </CardContent>
         </Card>
 
-        {/* Demo Credentials */}
-        <Card className="bg-blue-50 border-blue-200">
-          <CardContent className="pt-6">
-            <div className="text-center space-y-2">
-              <h3 className="text-sm font-medium text-blue-900">デモ認証情報</h3>
-              <div className="text-sm text-blue-700 space-y-1">
-                <div>ユーザー名: <code className="bg-blue-100 px-1 rounded">admin</code></div>
-                <div>パスワード: <code className="bg-blue-100 px-1 rounded">solar2024!</code></div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Footer */}
         <div className="text-center text-xs text-gray-500">
