@@ -89,13 +89,23 @@ function BlockDetailModal({ block, site, onClose }: BlockDetailModalProps) {
     
     if (typeof window !== 'undefined') {
       // Prevent background scrolling when modal is open
-      const originalStyle = window.getComputedStyle(document.body).overflow
+      const originalBodyStyle = window.getComputedStyle(document.body).overflow
+      const originalHtmlStyle = window.getComputedStyle(document.documentElement).overflow
+      
       document.body.style.overflow = 'hidden'
+      document.documentElement.style.overflow = 'hidden'
+      document.body.style.position = 'fixed'
+      document.body.style.width = '100%'
+      document.body.style.height = '100%'
       
       document.addEventListener('keydown', handleKeyDown)
       
       return () => {
-        document.body.style.overflow = originalStyle
+        document.body.style.overflow = originalBodyStyle
+        document.documentElement.style.overflow = originalHtmlStyle
+        document.body.style.position = ''
+        document.body.style.width = ''
+        document.body.style.height = ''
         document.removeEventListener('keydown', handleKeyDown)
         setMounted(false)
       }
@@ -168,13 +178,15 @@ function BlockDetailModal({ block, site, onClose }: BlockDetailModalProps) {
       className="bg-black bg-opacity-50 overflow-hidden"
       style={{ 
         position: 'fixed',
-        zIndex: 9999,
+        zIndex: 99999,
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
         width: '100vw',
         height: '100vh',
+        minHeight: '100vh',
+        minWidth: '100vw',
         margin: 0,
         padding: 0
       }}
@@ -183,18 +195,18 @@ function BlockDetailModal({ block, site, onClose }: BlockDetailModalProps) {
       aria-labelledby="modal-title"
       onClick={onClose}
     >
-      <div className="h-full w-full flex items-center justify-center p-2 sm:p-4">
+      <div className="h-full w-full flex items-center justify-center p-1 sm:p-4">
         <div 
-          className="bg-white rounded-lg w-full max-w-6xl h-[90vh] flex flex-col overflow-hidden shadow-xl"
+          className="bg-white rounded-lg w-full max-w-6xl h-[95vh] sm:h-[90vh] flex flex-col overflow-hidden shadow-xl"
           onClick={(e) => e.stopPropagation()}
         >
         {/* Header */}
-        <div className="flex items-center justify-between p-3 sm:p-6 border-b">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <Grid className="h-4 w-4 sm:h-6 sm:w-6 text-blue-600" />
-            <div>
-              <h2 id="modal-title" className="text-lg sm:text-xl font-bold">ブロック詳細</h2>
-              <p className="text-xs sm:text-sm text-gray-600">
+        <div className="flex items-center justify-between p-2 sm:p-6 border-b bg-gray-50 flex-shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+            <Grid className="h-4 w-4 sm:h-6 sm:w-6 text-blue-600 flex-shrink-0" />
+            <div className="min-w-0 flex-1">
+              <h2 id="modal-title" className="text-base sm:text-xl font-bold text-gray-900 truncate">ブロック詳細</h2>
+              <p className="text-xs sm:text-sm text-gray-600 truncate">
                 位置: ({block.x}, {block.y}) | <span className="hidden sm:inline">{site.name}</span>
               </p>
             </div>
@@ -204,6 +216,7 @@ function BlockDetailModal({ block, site, onClose }: BlockDetailModalProps) {
             size="sm" 
             onClick={onClose}
             aria-label="モーダルを閉じる"
+            className="flex-shrink-0 p-1 sm:p-2"
           >
             <X className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
@@ -212,17 +225,17 @@ function BlockDetailModal({ block, site, onClose }: BlockDetailModalProps) {
         {/* Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="flex flex-col h-full">
-            <div className="px-3 sm:px-6 pt-3 sm:pt-6 pb-2">
+            <div className="px-2 sm:px-6 pt-2 sm:pt-6 pb-2 flex-shrink-0">
               <TabsList className="grid w-full grid-cols-4 h-auto">
-                <TabsTrigger value="overview" className="text-xs sm:text-sm px-2 py-2">概要</TabsTrigger>
-                <TabsTrigger value="images" className="text-xs sm:text-sm px-2 py-2">画像解析</TabsTrigger>
-                <TabsTrigger value="analysis" className="text-xs sm:text-sm px-2 py-2">詳細解析</TabsTrigger>
-                <TabsTrigger value="history" className="text-xs sm:text-sm px-2 py-2">履歴</TabsTrigger>
+                <TabsTrigger value="overview" className="text-xs sm:text-sm px-1 sm:px-2 py-2">概要</TabsTrigger>
+                <TabsTrigger value="images" className="text-xs sm:text-sm px-1 sm:px-2 py-2">画像</TabsTrigger>
+                <TabsTrigger value="analysis" className="text-xs sm:text-sm px-1 sm:px-2 py-2">解析</TabsTrigger>
+                <TabsTrigger value="history" className="text-xs sm:text-sm px-1 sm:px-2 py-2">履歴</TabsTrigger>
               </TabsList>
             </div>
             
             <div className="flex-1 overflow-hidden">
-              <div className="h-full overflow-y-auto px-3 sm:px-6 pb-3 sm:pb-6">
+              <div className="h-full overflow-y-auto px-2 sm:px-6 pb-2 sm:pb-6">
 
             {/* Overview Tab */}
             <TabsContent value="overview" className="space-y-3 sm:space-y-6 mt-0">

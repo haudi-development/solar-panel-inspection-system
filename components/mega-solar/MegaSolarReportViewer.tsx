@@ -181,67 +181,72 @@ function MegaSolarReportViewer({ site, anomalies }: MegaSolarReportViewerProps) 
 
           {/* Simple Grid Overview */}
           <Card>
-            <CardContent className="p-4">
+            <CardContent className="p-3 sm:p-4">
               <div className="text-center mb-4">
-                <h3 className="font-semibold">サイト概要グリッド</h3>
-                <p className="text-sm text-gray-600">クリックで詳細表示</p>
+                <h3 className="font-semibold text-sm sm:text-base">サイト概要グリッド</h3>
+                <p className="text-xs sm:text-sm text-gray-600">クリックで詳細表示</p>
               </div>
               
-              <div 
-                className="mx-auto mb-4"
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: `repeat(${Math.min(site.blocks_x, 25)}, minmax(0, 1fr))`,
-                  gap: '1px',
-                  maxWidth: '100%',
-                  aspectRatio: `${Math.min(site.blocks_x, 25)} / ${Math.min(site.blocks_y, 20)}`,
-                }}
-              >
-                {displayBlocks.slice(0, 500).map((block, index) => (
-                  <div
-                    key={`block-${block.x}-${block.y}`}
-                    className={`
-                      aspect-square rounded-sm cursor-pointer transition-all duration-200
-                      ${getBlockColor(block)}
-                      flex items-center justify-center text-xs font-bold text-white
-                    `}
-                    title={`ブロック (${block.x}, ${block.y})${
-                      block.hasAnomaly 
-                        ? ` - ${block.anomalyType} (${block.anomalyCount}件)`
-                        : ' - 正常'
-                    }`}
-                    onClick={() => handleBlockClick(block.x, block.y)}
-                  >
-                    {block.hasAnomaly && (
-                      <span className="text-xs">
-                        {block.anomalyCount}
-                      </span>
-                    )}
-                  </div>
-                ))}
+              {/* Grid Container with proper spacing */}
+              <div className="mb-6">
+                <div 
+                  className="mx-auto"
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: `repeat(${Math.min(site.blocks_x, 25)}, minmax(0, 1fr))`,
+                    gap: '1px',
+                    maxWidth: '100%',
+                    aspectRatio: `${Math.min(site.blocks_x, 25)} / ${Math.min(site.blocks_y, 20)}`,
+                  }}
+                >
+                  {displayBlocks.slice(0, 500).map((block, index) => (
+                    <div
+                      key={`block-${block.x}-${block.y}`}
+                      className={`
+                        aspect-square rounded-sm cursor-pointer transition-all duration-200
+                        ${getBlockColor(block)}
+                        flex items-center justify-center text-xs font-bold text-white
+                      `}
+                      title={`ブロック (${block.x}, ${block.y})${
+                        block.hasAnomaly 
+                          ? ` - ${block.anomalyType} (${block.anomalyCount}件)`
+                          : ' - 正常'
+                      }`}
+                      onClick={() => handleBlockClick(block.x, block.y)}
+                    >
+                      {block.hasAnomaly && (
+                        <span className="text-xs">
+                          {block.anomalyCount}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              {/* Legend */}
-              <div className="flex flex-wrap justify-center gap-4">
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-green-200 rounded-sm"></div>
-                  <span className="text-xs">正常</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-red-400 rounded-sm"></div>
-                  <span className="text-xs">ホットスポット</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-orange-400 rounded-sm"></div>
-                  <span className="text-xs">バイパスダイオード</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-green-600 rounded-sm"></div>
-                  <span className="text-xs">植生影響</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-yellow-400 rounded-sm"></div>
-                  <span className="text-xs">汚れ影響</span>
+              {/* Legend with better mobile spacing */}
+              <div className="border-t pt-4">
+                <div className="grid grid-cols-2 sm:flex sm:flex-wrap sm:justify-center gap-2 sm:gap-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 sm:w-4 sm:h-4 bg-green-200 rounded-sm flex-shrink-0"></div>
+                    <span className="text-xs">正常</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 sm:w-4 sm:h-4 bg-red-400 rounded-sm flex-shrink-0"></div>
+                    <span className="text-xs">ホットスポット</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 sm:w-4 sm:h-4 bg-orange-400 rounded-sm flex-shrink-0"></div>
+                    <span className="text-xs">バイパスダイオード</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 sm:w-4 sm:h-4 bg-green-600 rounded-sm flex-shrink-0"></div>
+                    <span className="text-xs">植生影響</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 sm:w-4 sm:h-4 bg-yellow-400 rounded-sm flex-shrink-0"></div>
+                    <span className="text-xs">汚れ影響</span>
+                  </div>
                 </div>
               </div>
             </CardContent>
