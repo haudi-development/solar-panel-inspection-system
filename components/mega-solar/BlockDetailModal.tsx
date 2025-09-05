@@ -155,7 +155,7 @@ function BlockDetailModal({ block, site, onClose }: BlockDetailModalProps) {
 
   return (
     <div 
-      className="fixed inset-0 z-50 bg-black bg-opacity-50 overflow-hidden"
+      className="fixed inset-0 z-[60] bg-black bg-opacity-50 overflow-hidden"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
